@@ -20,7 +20,8 @@ ENV GOCACHE=/cache/gocache
 ENV GOMODCACHE=/cache/gomodcache
 
 # remove ",direct"
-ENV GOPROXY=https://proxy.golang.org
+#ENV GOPROXY=https://proxy.golang.org
+ENV GOPROXY=https://goproxy.cn
 
 COPY go.mod go.sum /src/
 
