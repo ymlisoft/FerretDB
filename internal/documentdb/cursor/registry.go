@@ -16,6 +16,7 @@ package cursor
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"log/slog"
 	"sync"
 	"time"
@@ -115,7 +116,9 @@ func (r *Registry) Close(ctx context.Context) {
 //
 // As a special case, if continuation is empty, this method does nothing.
 // That simplifies the typical usage.
-func (r *Registry) NewCursor(id int64, continuation wirebson.RawDocument, conn *pgx.Conn) {
+func (r *Registry) NewCursor(id int64, continuation wirebson.RawDocument, poolConn *pgxpool.Conn) {
+	conn := poolConn.Conn()
+
 	// to have better logging for now
 	var cont *wirebson.Document
 	if len(continuation) > 0 {
@@ -127,16 +130,17 @@ func (r *Registry) NewCursor(id int64, continuation wirebson.RawDocument, conn *
 	// TODO https://github.com/FerretDB/FerretDB-DocumentDB/issues/270
 	if len(continuation) == 0 {
 		if persist {
-			r.l.Warn(
+			r.l.Debug(
 				"Not persisting connection with empty continuation",
 				slog.Int64("id", id), slog.Any("continuation", cont), slog.Bool("persist", persist),
 			)
 
 			// _ = conn.Close(context.TODO())
+			poolConn.Release()
 		}
 
 		if id != 0 {
-			r.l.Warn(
+			r.l.Debug(
 				"Not storing cursor with empty continuation",
 				slog.Int64("id", id), slog.Any("continuation", cont), slog.Bool("persist", persist),
 			)
