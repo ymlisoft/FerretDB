@@ -132,7 +132,7 @@ func (r *Registry) NewCursor(id int64, continuation wirebson.RawDocument, conn *
 				slog.Int64("id", id), slog.Any("continuation", cont), slog.Bool("persist", persist),
 			)
 
-			_ = conn.Close(context.TODO())
+			// _ = conn.Close(context.TODO())
 		}
 
 		if id != 0 {
